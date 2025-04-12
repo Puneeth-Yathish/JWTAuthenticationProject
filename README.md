@@ -40,10 +40,11 @@ MySQL (for production setup)
 IDE (e.g., IntelliJ IDEA, Eclipse)
 
 1. Clone the repository:
-2. 
-git clone https://github.com/yourusername/jwtauthenticationproject.git
+2. git clone https://github.com/yourusername/jwtauthenticationproject.git
+
+
 cd jwtauthenticationproject
-3. Install dependencies:
+4. Install dependencies:
 
 mvn clean install
 4. Configure Database (if using MySQL):
