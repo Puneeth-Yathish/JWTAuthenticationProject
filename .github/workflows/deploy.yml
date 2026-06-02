@@ -44,10 +44,15 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             echo "Stopping old app..."
-            pgrep -f securezone-0.0.1-SNAPSHOT.jar | xargs -r kill -9 || true
+            pid=$(pgrep -f securezone-0.0.1-SNAPSHOT.jar)
 
-            echo "Waiting..."
-            sleep 5
+            if [ ! -z "$pid" ]; then
+              echo "Killing process $pid"
+              kill $pid
+              sleep 5
+            else
+              echo "No running app found"
+            fi
 
             echo "Cleaning..."
             rm -f /home/ec2-user/app/*.jar
@@ -59,10 +64,14 @@ jobs:
             cd /home/ec2-user/app
             nohup java -jar securezone-0.0.1-SNAPSHOT.jar &
 
+            echo "Waiting..."
             sleep 10
 
-            echo "Checking..."
+            echo "Checking process..."
             ps -ef | grep securezone | grep -v grep
+
+            echo "Checking port..."
             ss -tulnp | grep 8080 || echo "Port not open!"
+          
          
           
