@@ -42,25 +42,25 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
-          script_stop: false   # ✅ VERY IMPORTANT FIX
           script: |
-            echo-0.0.1-SNAPSHOT.jar" | xargs -r kill -9 || true  echo "Stopping old app..."
-            
+            echo "Stopping old app..."
+            pgrep -f securezone-0.0.1-SNAPSHOT.jar | xargs -r kill -9 || true
+
             echo "Waiting..."
             sleep 5
-            
+
             echo "Cleaning..."
             rm -f /home/ec2-user/app/*.jar
-            
+
             echo "Copying..."
             cp /home/ec2-user/app/target/securezone-0.0.1-SNAPSHOT.jar /home/ec2-user/app/
-            
+
             echo "Starting..."
             cd /home/ec2-user/app
-            nohup java -jar securezone-0.0.1-SNAPSHOT.jar &   # ✅ no redirection
-            
+            nohup java -jar securezone-0.0.1-SNAPSHOT.jar &
+
             sleep 10
-            
+
             echo "Checking..."
             ps -ef | grep securezone | grep -v grep
             ss -tulnp | grep 8080 || echo "Port not open!"
