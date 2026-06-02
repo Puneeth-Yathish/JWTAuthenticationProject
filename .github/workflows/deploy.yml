@@ -44,28 +44,25 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script_stop: false   # ✅ VERY IMPORTANT FIX
           script: |
-            echo "Stopping old app..."
-            pgrep -f "securezone-0.0.1-SNAPSHOT.jar" | xargs -r kill -9 || true
-
-            echo "Waiting for process to stop..."
+            echo-0.0.1-SNAPSHOT.jar" | xargs -r kill -9 || true  echo "Stopping old app..."
+            
+            echo "Waiting..."
             sleep 5
-
-            echo "Cleaning old jar..."
+            
+            echo "Cleaning..."
             rm -f /home/ec2-user/app/*.jar
-
-            echo "Copying new jar..."
+            
+            echo "Copying..."
             cp /home/ec2-user/app/target/securezone-0.0.1-SNAPSHOT.jar /home/ec2-user/app/
-
-            echo "Starting new app..."
+            
+            echo "Starting..."
             cd /home/ec2-user/app
-            nohup java -jar securezone-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
-
-            echo "Waiting for app to start..."
+            nohup java -jar securezone-0.0.1-SNAPSHOT.jar &   # ✅ no redirection
+            
             sleep 10
-
-            echo "Checking if app is running..."
+            
+            echo "Checking..."
             ps -ef | grep securezone | grep -v grep
-
-            echo "Checking port..."
             ss -tulnp | grep 8080 || echo "Port not open!"
+         
           
