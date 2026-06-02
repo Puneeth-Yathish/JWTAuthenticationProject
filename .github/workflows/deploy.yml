@@ -43,27 +43,34 @@ jobs:
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           script: |
-            echo "Checking running app..."
-            pid=$(pgrep -f securezone-0.0.1-SNAPSHOT.jar)
+            echo "Stopping old app..."
+            pkill -f "securezone-0.0.1-SNAPSHOT.jar" || true
 
-            if [ ! -z "$pid" ]; then
-              echo "Stopping app gracefully ($pid)"
-              kill $pid
-              sleep 10
-            else
-              echo "No running app found"
-            fi
+            echo "Waiting for process to stop..."
+            sleep 10   # ✅ increased wait (important)
+
+            echo "Cleaning old jar..."
+            rm -f /home/ec2-user/app/securezone-0.0.1-SNAPSHOT.jar
+
+            echo "Copying new jar..."
+            cp /home/ec2-user/app/target/securezone-0.0.1-SNAPSHOT.jar /home/ec2-user/app/
 
             echo "Starting new app..."
-            cd /home/ec2-user/app/target
-            nohup java -jar securezone-0.0.1-SNAPSHOT.jar &
+            cd /home/ec2-user/app
+            nohup java -jar securezone-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
 
-            echo "Waiting..."
-            sleep 10
+            echo "Waiting for startup..."
+            sleep 15   # ✅ give Spring Boot enough time
 
-            echo "Verifying..."
-            ps -ef | grep securezone | grep -v grep
-            ss -tulnp | grep 8080 || echo "Port not open!"
+            echo "Checking process..."
+            ps -ef | grep securezone | grep -v grep || echo "App NOT running!"
+
+            echo "Checking port..."
+            ss -tulnp | grep 8080 || echo "Port NOT open!"
+
+            echo "Last logs..."
+            tail -n 20 /home/ec2-user/app/app.log
+          
           
          
           
