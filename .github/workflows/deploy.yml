@@ -48,7 +48,7 @@ jobs:
 
             if [ ! -z "$pid" ]; then
               echo "Killing process $pid"
-              kill $pid
+              (kill $pid) &    # ✅ run in background to avoid killing ssh session
               sleep 5
             else
               echo "No running app found"
