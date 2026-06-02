@@ -43,14 +43,31 @@ jobs:
           username: ec2-user
           key: ${{ secrets.SSH_KEY }}
           script: |
-            pkill -f "java -jar" || true && \
-            sleep 5 && \
-            rm -f /home/ec2-user/app/*.jar && \
-            cp /home/ec2-user/app/target/*.jar /home/ec2-user/app/ && \
-            cd /home/ec2-user/app && \
-            nohup java -jar *.jar > app.log 2>&1 & \
-            sleep 5 && \
-            ps -ef | grep java
+            echo "Stopping old app..."
+            pkill -f "java -jar" || true
+
+            echo "Waiting for process to stop..."
+            sleep 5
+
+            echo "Cleaning old jar..."
+            rm -f /home/ec2-user/app/*.jar
+
+            echo "Copying new jar..."
+            cp /home/ec2-user/app/target/*.jar /home/ec2-user/app/
+
+            echo "Starting new app..."
+            cd /home/ec2-user/app
+            nohup java -jar *.jar > app.log 2>&1 &
+
+            echo "Waiting for app to start..."
+            sleep 10
+
+            echo "Checking if app is running..."
+            ps -ef | grep java | grep -v grep
+
+            echo "Checking port..."
+            ss -tulnp | grep 8080 || echo "Port not open!"
+          
 
 
             
